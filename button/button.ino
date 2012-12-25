@@ -1,15 +1,13 @@
 /*
 Developed by the LAB at Rockwell Group
 
-See "basic protoshield setup.PNG" in the examples directory
-to see how this example is expecting the Arduino to be wired up.
-I have the Ethernet shield sitting on top of the arduino, and then the
-Sparkfun ProtoShield on top of that.
+See "basic protoshield setup.PNG" in the examples directory to see how this example is 
+expecting the Arduino to be wired up. I have the Ethernet shield sitting on top of the 
+arduino, and then the Sparkfun ProtoShield on top of that.
 
-You must remember to include the Ethernet library, SPI library, 
-and the WebSocketClient library 
-(accessible here: https://github.com/labatrockwell/ArduinoWebsocketClient)
-in order to use the Spacebrew library.
+You must remember to include the Ethernet library, SPI library, and the WebSocketClient 
+library (accessible here: https://github.com/labatrockwell/ArduinoWebsocketClient) to 
+use the Spacebrew library.
 
 visit http://docs.spacebrew.cc/ for more info about Spacebrew!
 

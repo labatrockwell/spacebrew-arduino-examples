@@ -14,21 +14,28 @@
  *  This sketch also creates variations of the app's spacebrew name whenever it connects to spacebrew, 
  *  in order to address a current issue with the connection between the spacebrew server and Arduino
  *  clients.
- * 
- *  Check-out the readme for more information about the message protocol, and the limitations associted
- *  with this sketch.
  *
-*/
+ *  ** Check-out the the readme for information about license, how to set up this sketch and the 
+ *  ** spacebrew_forwarder message protocol.
+ *
+ *  Visit http://docs.spacebrew.cc/ for more info about Spacebrew!
+ *
+ *  @filename    spacebrew_forwarder.ino  
+ *  @author      Julio Terra from LAB at Rockwell Group  
+ *  @modified    12/21/2012  
+ *  @version     1.0.0  
+ *
+ */
 
 #include <SPI.h>
 #include <Spacebrew.h>
 #include <Ethernet.h>
 #include <WebSocketClient.h>
 
-#define MSG_LEN       20      // maximum length of serial messages
 #define MSG_END       '\n'    // message end character
-#define VAL_LEN       4       // maximum length of each int value, used to parse integers between ids in serial msg
 #define MAX_NAME_LEN  20      // maximum length of spacebrew activity name
+#define MSG_LEN       20      // maximum length of serial messages
+#define VAL_LEN       4       // maximum length of each int value, used to parse integers between ids in serial msg
 
 /////////////////////////////////////////////////
 // CUSTOMIZABLE CONSTANTS AND VARIABLES - START
@@ -50,15 +57,14 @@ char sbName [MAX_NAME_LEN + 1] = "check_in_stn_";   // base name of the app
 int sbNameLen = 13;                                 // length of base name
 
 // serial to spacebrew message conversion/parsing variables
-char pubNames [PUB_CNT][11] =     {"range", "string", "boolean"};     // name of publish channels (outlets) 
-char pubIds [PUB_CNT] =     {'R', 'S', 'B'};                          // char ids used in serial message to identify each value
+char pubNames [PUB_CNT][11] = {"range", "string", "boolean"};         // name of publish channels (outlets) 
+char pubIds [PUB_CNT] =  {'R', 'S', 'B'};                             // char ids used in serial message to identify each value
 enum SBType pubTypes [PUB_CNT] =  {SB_RANGE, SB_STRING, SB_BOOLEAN};  // type of publish channels (outlets)
 int pubData [PUB_CNT] = {0,0,0};                                      // current state, also last published state
 
 //////////////////////////////////////////////////
 // CUSTOMIZABLE CONSTANTS AND VARIABLES - END 
 //////////////////////////////////////////////////
-
 
 // create spacebrew connection object, and vars to hold base name, and length of base name
 Spacebrew sbConnection;
@@ -76,14 +82,14 @@ void setup()   {
 
   // Adapt the spacebrew app name to include an ID number
   randomSeed(analogRead(0));    // use randomSeed to influence generation of random numbers
-  if (sbNameLen >= (MAX_NAME_LEN - VAL_LEN)) sbNameLen = MAX_NAME_LEN - 5;
+  if (sbNameLen >= (MAX_NAME_LEN - 4)) sbNameLen = MAX_NAME_LEN - 5;
   for (int i = sbNameLen; i < MAX_NAME_LEN; i++) {    
     if (i < (sbNameLen + 4)) sbName[i] = char(int(random(int('0'),int('9'))));
     else sbName[i] = '\0';
   }
 
   // connect to serial
-  Serial.begin(9600);
+  Serial.begin(57600);
   while (!Serial) {}    // for leonardos only
   if (debug) Serial.println(F("serial: connected"));
   resetMsg();
@@ -104,7 +110,7 @@ void setup()   {
   for (int i = 0; i < PUB_CNT; i++) sbConnection.addPublish(pubNames[i], pubTypes[i]);
 
   // connect to spacebrew
-  sbConnection.connect("10.0.1.11", sbName, "check in station prototype");    
+  sbConnection.connect("ec2-184-72-140-184.compute-1.amazonaws.com", sbName, "spacebrew forwarder example");    
   if (debug) { Serial.print(F("spacebrew: attempting connection\n  - name: ")); Serial.println(sbName);}
 
   delay(1000);
@@ -136,7 +142,6 @@ void readSerial() {
         if (serialMsg[serialMsgLen] == pubIds[j]) {
           msgStarted = true;
           if (debug) Serial.println(F("serialMsg started: "));
-          // break;
           j = PUB_CNT;
         } 
       }
@@ -247,7 +252,7 @@ void processSerial() {
 boolean handleRange(char * curMsg, int serialMsgPos, int pubIndex) {
 
   // if new character is a valid char then add it to the curMsg
-  if (serialMsg[serialMsgPos] >= '0' && serialMsg[serialMsgPos] <= '9') {
+  if ((serialMsg[serialMsgPos] >= '0' && serialMsg[serialMsgPos] <= '9') && (curMsgPos < VAL_LEN)) {
     curMsg[curMsgPos] = serialMsg[serialMsgPos];
     curMsgPos++;
     if (debug) { Serial.print(F("[handleRange] adding to curMsg: ")); Serial.println(curMsg[curMsgPos]); }
@@ -315,7 +320,7 @@ boolean handleString(char * curMsg, int serialMsgPos, int pubIndex) {
  */
 boolean handleBoolean(char * curMsg, int serialMsgPos, int pubIndex) {
   // if new character is a valid char then add it to the curMsg
-  if (serialMsg[serialMsgPos] >= '0' && serialMsg[serialMsgPos] <= '1' && curMsgPos == 0) {
+  if (serialMsg[serialMsgPos] >= '0' && serialMsg[serialMsgPos] <= '1' && (curMsgPos == 0)) {
     curMsg[curMsgPos] = serialMsg[serialMsgPos];
     curMsgPos++;
     if (debug) { Serial.print(F("[handleBoolean] adding to curMsg: ")); Serial.println(curMsg[curMsgPos]); }
