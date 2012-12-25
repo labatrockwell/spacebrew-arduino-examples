@@ -3,9 +3,9 @@ Spacebrew Data Forwarder
 
 Overview  
 --------  
-The spacebrew library requires a decent amount of SRAM and sometimes conflicts with libraries required to connect the arduino to select components, such as the Adafruit PN532 NFC/RFID Shield (http://adafruit.com/products/789) and the Sparkfun MPR121 Capacitive Touch Sensor Breakout Board (https://www.sparkfun.com/products/9695). That's why we've created a two arduino set-up, where one arduino captures data from sensors and components, and then sends the data to another ethernet-enabled arduino, which forwards it to Spacebrew.  
-
-The two sketches in this folder work together to capture data and forward that data to Spacebrew:  
+The spacebrew library requires a decent amount of SRAM and sometimes conflicts with libraries required to connect the arduino to select components, such as the Adafruit PN532 NFC/RFID Shield (http://adafruit.com/products/789) and the Sparkfun MPR121 Capacitive Touch Sensor Breakout Board (https://www.sparkfun.com/products/9695).  
+  
+That's why we've created a two arduino set-up, where one arduino captures data from sensors and components, and then sends the data to another ethernet-enabled arduino, which forwards it to Spacebrew. The two sketches in this folder work together to capture data and forward that data to Spacebrew:  
 * The first Arduino is connected to a button. It runs a sketch that sends three serial messages whenever the button is pressed. The first message is a boolen true value; the second is an integer that reflects how many times the button has been pressed, and the last message isa string that holds a short sentence. 
 * The second Arduino is connected to Spacebrew via ethernet. It runs a sketch that forwards the messages received via serial to the appropriate Spacebrew publication channels: the first is a boolean channel; the second is a range channel; and the last is a string channel.  
   
@@ -13,25 +13,37 @@ Copyright (C) 2012 LAB at Rockwell Group http://lab.rockwellgroup.com
   
 @author      Julio Terra (LAB at Rockwell Group)  
 @modified    12/23/2012  
-@version     0.0.1  
+@version     1.0.0  
   
   
-Set Up
--------
-
+Set Up  
+-------  
+  
 ###1. Load and Test Sketches
 A. Load the spacebrew_forwader sketch onto an ethernet-enabled and ethernet-connected Arduino. Test it out by following these stpes:
-* First make sure that the sketch is able to connect to Spacebrew. By default it is configured to connect to the shared Spacebrew server at "ec2-184-72-140-184.compute-1.amazonaws.com". Check the hosted web-amin to confirm that your Arduino showed up.
-	* Link to the hosted web-admin pointed at the shared server - http://spacebrew.cc/master/spacebrew/admin/admin.html?server=ec2-184-72-140-184.compute-1.amazonaws.com 
-	* If you want to change the Spacebrew then follow the instructions in the Spacebrew_Forwarder Sketch Set-Up below
-* Next, test the message forwarding capabilities by sending the sketch a messave via serial. Use one of the sample messages from Sample Serial Messages section below. 
+* First, make sure that the sketch is able to connect to Spacebrew. By default it is configured to connect to the shared Spacebrew server at ```ec2-184-72-140-184.compute-1.amazonaws.com```. 
+	* Check the hosted web-amin to confirm that your Arduino shows up - http://spacebrew.cc/master/spacebrew/admin/admin.html?server=ec2-184-72-140-184.compute-1.amazonaws.com 
+	* To change the Spacebrew server then follow the instructions in the Spacebrew_Forwarder Sketch Set-Up below
+* Next, test the message forwarding capabilities by sending the sketch a message via serial. Use one of the sample messages from the list below below.  
 	* On Spacebrew, data being sent out from each publication channel is visualized by an animation on the round icon that serves as the connection point between publication and subscription channels.
+  
+Sample Serial Messages:  
+```
+B1\n
+R100\n
+Sthis is a test\n   
+B1R800\n
+
+Note: When using the sample serial messages leave off the '\n' and set your serial monitor to append NL and CR 
+      chars to the end of each message (I think this is the default option on the Arduino IDE serial monitor). 
+```
 
 B. Load the data_capture sketch onto an Arduino that is connected to a button, as outlined in the diagram in the image file spacebrew_forwarder_hookup.png. Test out the sketch by following these steps:
 * Open a serial monitor to connect to the Arduino running the data capture sketch. Press the button and read the serial messages that are received. They should correspond to the serial messages described below (not inclusive of the commented out section). 
 	* If no messages are being received make sure the switch is hooked up properly. 
 	* If getting unreadable data make sure serial monitor is set to proper baud rate (57600). 
   
+Expected Serial Messages:  
 ```
 Sthat felt good 	// S followed by a static string
 B1 					// B followed by 1 or 0
@@ -41,6 +53,8 @@ R1 					// R followed by number of times button has been pressed
 ####2. Connecting Arduinos  
 Follow the diagram in the image file spacebrew_forwarder_hookup.png to hook-up the Arduino with a button to the one that is connected to Spacebrew via ethernet.  
   
+
+![diagram for hooking-up Arduinos](https://raw.github.com/labatrockwell/spacebrew-arduino-examples/master/spacebrew_forwarder/spacebrew_forwarder_hookup.png)
     
 Spacebrew_Forwarder Sketch Set-Up
 ---------------------------------------------  
@@ -56,7 +70,6 @@ example:
 ```   
 sbConnection.connect("10.0.1.11", sbName, "spacebrew forwarder example");
 ```    
-
 
 ###Advanced Customization Steps
 These steps explain how to customize this sketch to change the number, name and type of the Spacebrew publication channels, and the associated mapped serial message ids.
